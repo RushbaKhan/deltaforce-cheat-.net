@@ -1,0 +1,7 @@
+# Brand Studio — never publicly routable on Cloudflare Pages
+/brand-studio /404.html 404
+/brand-studio/ /404.html 404
+/brand-studio/* /404.html 404
+/__brand /404.html 404
+/__brand/ /404.html 404
+/__brand/* /404.html 404
