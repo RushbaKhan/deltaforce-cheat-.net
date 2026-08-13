@@ -1,114 +1,25 @@
 ---
+import HomeSeoApp from './react/HomeSeo';
 import { homeFaqs } from '../data/site';
 import { getFaqPath } from '../data/faq';
+import { defaultLocale, type LocaleCode } from '../data/i18n/locales';
 
-const categories = [
-	{
-		title: 'Features',
-		hint: 'What is included',
-		links: [
-			{ href: '/features/', label: 'All features' },
-			{ href: '/delta-force-esp/', label: 'ESP' },
-			{ href: '/delta-force-aimbot/', label: 'Aimbot' },
-			{ href: '/delta-force-radar/', label: 'Radar' },
-		],
-	},
-	{
-		title: 'Status',
-		hint: 'Before you play',
-		links: [
-			{ href: '/updates/', label: 'Live status' },
-			{ href: '/undetected-delta-force-cheats/', label: 'Undetected' },
-			{ href: '/delta-force-anti-cheat-bypass/', label: 'Ricochet' },
-			{ href: '/setup/', label: 'Setup' },
-		],
-	},
-	{
-		title: 'Store',
-		hint: 'Buy & plans',
-		links: [
-			{ href: '/pricing/', label: 'Plans' },
-			{ href: '/reviews/', label: 'Reviews' },
-			{ href: '/delta-force-cheats/', label: 'Preview' },
-			{ href: '/faq/', label: 'FAQ' },
-		],
-	},
-	{
-		title: 'Help',
-		hint: 'Need a hand',
-		links: [
-			{ href: '/support/', label: 'Support' },
-			{ href: '/setup/', label: 'Setup guide' },
-			{ href: '/blog/', label: 'Blog' },
-			{ href: '/refund-policy/', label: 'Refunds' },
-		],
-	},
-];
+interface Props {
+	locale?: LocaleCode;
+}
+
+const locale = Astro.props.locale ?? defaultLocale;
+const faqs = homeFaqs.map((item) => ({
+	slug: item.slug,
+	question: item.question,
+	answer: item.answer,
+	href: getFaqPath(item.slug),
+}));
 ---
 
-<section class="home-seo shell" aria-labelledby="home-seo-title">
-	<header class="home-seo__head">
-		<div>
-			<p class="home-seo__eyebrow">Guides</p>
-			<h2 id="home-seo-title">Browse by category</h2>
-			<p class="home-seo__lede">Short links for features, status, store, and help.</p>
-		</div>
-	</header>
+<HomeSeoApp client:visible locale={locale} faqs={faqs} />
 
-	<div class="home-seo__cats">
-		{
-			categories.map((cat) => (
-				<nav class="home-seo__cat" aria-label={cat.title}>
-					<header class="home-seo__cat-head">
-						<h3>{cat.title}</h3>
-						<p>{cat.hint}</p>
-					</header>
-					<ul>
-						{cat.links.map((link) => (
-							<li>
-								<a href={link.href}>
-									<span>{link.label}</span>
-									<span class="home-seo__cat-arrow" aria-hidden="true" />
-								</a>
-							</li>
-						))}
-					</ul>
-				</nav>
-			))
-		}
-	</div>
-
-	<section class="home-seo__faq" aria-labelledby="home-faq-title">
-		<header class="home-seo__faq-head">
-			<div>
-				<p class="home-seo__eyebrow">FAQ</p>
-				<h3 id="home-faq-title">Before you buy</h3>
-				<p class="home-seo__faq-lede">Delivery, detection status, and what is included.</p>
-			</div>
-			<a class="home-seo__faq-link" href="/faq/">All answers</a>
-		</header>
-		<div class="home-seo__faq-list">
-			{
-				homeFaqs.map((item) => (
-					<details class="home-seo__item" id={item.slug}>
-						<summary>
-							<span>{item.question}</span>
-							<span class="home-seo__chev" aria-hidden="true" />
-						</summary>
-						<div class="home-seo__item-body">
-							<p>{item.answer}</p>
-							<a class="home-seo__item-link" href={getFaqPath(item.slug)}>
-								Open full page
-							</a>
-						</div>
-					</details>
-				))
-			}
-		</div>
-	</section>
-</section>
-
-<style>
+<style is:global>
 	.home-seo {
 		padding-block: clamp(2.75rem, 5vw, 4rem);
 		color: var(--ink-muted);

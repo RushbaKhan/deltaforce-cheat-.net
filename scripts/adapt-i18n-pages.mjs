@@ -1,20 +1,128 @@
 #!/usr/bin/env node
-/** Adapt pages-en.mjs and pages-i18n.mjs from Delta Force source. */
+/** Adapt pages-en.mjs and pages-i18n.mjs from Tarkov source. */
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url'; const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SRC = path.resolve(ROOT, '..', 'amansand'); const REMOVE_PAGE_KEYS = [ 'hacks', 'cheat-download', 'mod-menu', 'soft-aim', 'best-cheats', 'aimbot-hack', 'esp-hack', 'unlock-all',
-]; const REPLACEMENTS = [ ['delta-force-esp', 'delta-force-esp'], ['delta-force-aimbot', 'delta-force-aimbot'], ["'ricochet'", "'ricochet'"], ['delta-force-anti-cheat-bypass', 'delta-force-anti-cheat-bypass'], ['undetected-delta-force-cheats', 'undetected-delta-force-cheats'], ['delta-force-wallhack', 'delta-force-wallhack'], ['delta-force-radar', 'delta-force-radar'], ['delta-force-cheats-2026', 'delta-force-cheats-2026'], ['call-of-duty-delta-force-cheats', 'call-of-duty-delta-force-cheats'], ['call-of-duty-delta-force', 'delta-force'], ['Call of Duty: Delta Force', 'Call of Duty: Delta Force'], ['Call of Duty Delta Force', 'Call of Duty: Delta Force'], ['Delta Force Cheats', 'Delta Force Cheats'], ['Delta force cheats', 'Delta force cheats'], ['Delta Force cheat', 'Delta Force cheat'], ['Delta Force ESP', 'Call of Duty: Delta Force ESP'], ['Delta Force Aimbot', 'Call of Duty: Delta Force Aimbot'], ['Delta Force wallhack', 'Call of Duty: Delta Force wallhack'], ['Delta Force radar', 'Call of Duty: Delta Force radar'], ['Delta Force firefights', 'Call of Duty: Delta Force firefights'], ['Delta Force combat', 'Call of Duty: Delta Force combat'], ['Delta Force patches', 'Call of Duty: Delta Force patches'], ['Delta Force updates', 'Call of Duty: Delta Force updates'], ['Delta Force setup', 'Call of Duty: Delta Force setup'], ['Delta Force license', 'Call of Duty: Delta Force license'], ['Delta Force licenses', 'Call of Duty: Delta Force licenses'], ['Delta Force sessions', 'Call of Duty: Delta Force sessions'], ['in Delta Force', 'in Call of Duty: Delta Force'], ['for Delta Force', 'for Call of Duty: Delta Force'], ['Delta Force on', 'Call of Duty: Delta Force on'], ['Delta Force or', 'Call of Duty: Delta Force or'], ['Delta Force\'s', 'Call of Duty: Delta Force\'s'], ['Delta Force ', 'Call of Duty: Delta Force '], ['Ricochet anti-cheat', 'Ricochet anti-cheat'], ['Ricochet maintenance', 'Ricochet maintenance'], ['Ricochet bypass', 'Ricochet bypass'], ['Ricochet Bypass', 'Ricochet Bypass'], ['Ricochet', 'Ricochet anti-cheat'], ['ricochet', 'ricochet'], ['support@delta-forcescheats.net', 'support@delta-forcescheats.net'], ['Hazard Operations and Warfare maps', 'Hazard Operations and Warfare maps'], ['Verdansk, Urzikstan and Rebirth Island', 'Verdansk, Urzikstan and Rebirth Island'], ['gulag fights', 'gulag fights'], ['gulag fight', 'gulag fight'], ['gulag rounds', 'gulag rounds'], ['gulag', 'gulag'], ['operators', 'players'], ['operator', 'player'], ['Operators', 'Players'], ['Operator', 'Player'], ['UAV', 'UAV'], ['Hazard Operations and Battle Royale', 'Hazard Operations and Battle Royale'], ['Hazard Operations and Warfare', 'Hazard Operations and Warfare'], ['BR & Hazard Operations', 'BR & Hazard Operations'], ['loadout drops', 'loadout drops'], ['loadout drop', 'loadout drop'], ['contracts', 'chests'], ['contract', 'chest'], ['Activision\'s', 'Epic Games\''], ['Call of Duty combat pace', 'Call of Duty: Delta Force combat pace'], ['COD', 'Call of Duty: Delta Force'],
-]; function apply(content) { let r = content; for (const [a, b] of REPLACEMENTS) r = r.split(a).join(b); return r;
-} function removePageObjectBlocks(content) { let r = content; for (const key of REMOVE_PAGE_KEYS) { const quoted = `'${key}'`; const patterns = [ new RegExp(`\\t${quoted}: \\{[\\s\\S]*?\\},\\n`, 'g'), new RegExp(`\\t${key.replace(/-/g, '\\-')}: \\{[\\s\\S]*?\\},\\n`, 'g'), ]; for (const p of patterns) r = r.replace(p, ''); } return r;
-} async function adaptFile(rel) { let content = await readFile(path.join(SRC, rel), 'utf8'); content = apply(content); content = removePageObjectBlocks(content); await writeFile(path.join(ROOT, rel), content); console.log('Adapted', rel);
-} await adaptFile('scripts/i18n-data/pages-en.mjs');
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SRC = path.resolve(ROOT, '..', 'amansand');
+
+const REMOVE_PAGE_KEYS = [
+	'hacks', 'cheat-download', 'mod-menu', 'soft-aim', 'best-cheats',
+	'aimbot-hack', 'esp-hack', 'unlock-all',
+];
+
+const REPLACEMENTS = [
+	['tarkov-esp', 'tarkov-esp'],
+	['tarkov-aimbot', 'tarkov-aimbot'],
+	["'battleye'", "'battleye'"],
+	['battleye-bypass', 'battleye-bypass'],
+	['undetected-tarkov-cheats', 'undetected-tarkov-cheats'],
+	['tarkov-wallhack', 'tarkov-wallhack'],
+	['tarkov-radar-hack', 'tarkov-radar-hack'],
+	['tarkov-cheats-2026', 'tarkov-cheats-2026'],
+	['escape-from-tarkov-cheats', 'escape-from-tarkov-cheats'],
+	['escape-from-tarkov', 'tarkov'],
+	['Escape from Tarkov', 'Escape from Tarkov'],
+	['Escape from Tarkov', 'Escape from Tarkov'],
+	['Tarkov Cheats', 'Tarkov Cheats'],
+	['Tarkov cheats', 'Tarkov cheats'],
+	['Tarkov cheat', 'Tarkov cheat'],
+	['Tarkov ESP', 'Escape from Tarkov ESP'],
+	['Tarkov Aimbot', 'Escape from Tarkov Aimbot'],
+	['Tarkov wallhack', 'Escape from Tarkov wallhack'],
+	['Tarkov radar', 'Escape from Tarkov radar'],
+	['Tarkov firefights', 'Escape from Tarkov firefights'],
+	['Tarkov combat', 'Escape from Tarkov combat'],
+	['Tarkov patches', 'Escape from Tarkov patches'],
+	['Tarkov updates', 'Escape from Tarkov updates'],
+	['Tarkov setup', 'Escape from Tarkov setup'],
+	['Tarkov license', 'Escape from Tarkov license'],
+	['Tarkov licenses', 'Escape from Tarkov licenses'],
+	['Tarkov sessions', 'Escape from Tarkov sessions'],
+	['in Tarkov', 'in Escape from Tarkov'],
+	['for Tarkov', 'for Escape from Tarkov'],
+	['Tarkov on', 'Escape from Tarkov on'],
+	['Tarkov or', 'Escape from Tarkov or'],
+	['Tarkov\'s', 'Escape from Tarkov\'s'],
+	['Tarkov ', 'Escape from Tarkov '],
+	['BattlEye anti-cheat', 'BattlEye anti-cheat'],
+	['BattlEye maintenance', 'BattlEye maintenance'],
+	['BattlEye bypass', 'BattlEye bypass'],
+	['BattlEye Bypass', 'BattlEye Bypass'],
+	['BattlEye', 'BattlEye anti-cheat'],
+	['battleye', 'battleye'],
+	['support@deltaforcecheat.net', 'support@deltaforcecheat.net'],
+	['Customs, Woods, and Streets of Tarkov', 'Customs, Woods, and Streets of Tarkov'],
+	['Customs, Woods and Streets of Tarkov', 'Customs, Woods and Streets of Tarkov'],
+	['extract fights', 'extract fights'],
+	['extract fight', 'extract fight'],
+	['raid rounds', 'raid rounds'],
+	['extract', 'extract'],
+	['PMCs', 'players'],
+	['operator', 'player'],
+	['PMCs', 'Players'],
+	['Operator', 'Player'],
+	['extract timer', 'extract timer'],
+	['PMC raids and Scav runs', 'PMC raids and Scav runs'],
+	['PMC raids and Scav runs', 'PMC raids and Scav runs'],
+	['PMC & Scav', 'PMC & Scav'],
+	['high-value loot', 'high-value loot'],
+	['high-value loot', 'high-value loot'],
+	['contracts', 'chests'],
+	['contract', 'chest'],
+	['Activision\'s', 'Epic Games\''],
+	['Call of Duty combat pace', 'Escape from Tarkov combat pace'],
+	['COD', 'Escape from Tarkov'],
+];
+
+function apply(content) {
+	let r = content;
+	for (const [a, b] of REPLACEMENTS) r = r.split(a).join(b);
+	return r;
+}
+
+function removePageObjectBlocks(content) {
+	let r = content;
+	for (const key of REMOVE_PAGE_KEYS) {
+		const quoted = `'${key}'`;
+		const patterns = [
+			new RegExp(`\\t${quoted}: \\{[\\s\\S]*?\\},\\n`, 'g'),
+			new RegExp(`\\t${key.replace(/-/g, '\\-')}: \\{[\\s\\S]*?\\},\\n`, 'g'),
+		];
+		for (const p of patterns) r = r.replace(p, '');
+	}
+	return r;
+}
+
+async function adaptFile(rel) {
+	let content = await readFile(path.join(SRC, rel), 'utf8');
+	content = apply(content);
+	content = removePageObjectBlocks(content);
+	await writeFile(path.join(ROOT, rel), content);
+	console.log('Adapted', rel);
+}
+
+await adaptFile('scripts/i18n-data/pages-en.mjs');
 await adaptFile('scripts/i18n-data/pages-i18n.mjs');
-await adaptFile('scripts/i18n-data/phrases.mjs'); // Patch phrases KW object
+await adaptFile('scripts/i18n-data/phrases.mjs');
+
+// Patch phrases KW object
 let phrases = await readFile(path.join(ROOT, 'scripts/i18n-data/phrases.mjs'), 'utf8');
-phrases = phrases.replace( /const KW = \{[\s\S]*?\};/, `const KW = { esp: 'ESP wallhack', radar: 'radar hack', aimbot: 'Aimbot', product: 'Delta Force Cheats', game: 'Call of Duty: Delta Force', checkout: '', ricochet: 'Ricochet anti-cheat',
+phrases = phrases.replace(
+	/const KW = \{[\s\S]*?\};/,
+	`const KW = {
+	esp: 'ESP wallhack',
+	radar: 'radar hack',
+	aimbot: 'Aimbot',
+	product: 'Tarkov Cheats',
+	game: 'Escape from Tarkov',
+	checkout: 'Zadeyo',
+	battleye: 'BattlEye anti-cheat',
 };`,
 );
-phrases = phrases.replace(/KW\.ricochet/g, 'KW.ricochet');
-phrases = phrases.replace(/maps: '[^']*'/g, "maps: 'Hazard Operations and Warfare maps'");
-await writeFile(path.join(ROOT, 'scripts/i18n-data/phrases.mjs'), phrases); console.log('Done adapting i18n pages.');
+phrases = phrases.replace(/KW\.battleye/g, 'KW.battleye');
+phrases = phrases.replace(/maps: '[^']*'/g, "maps: 'Customs, Woods, and Streets of Tarkov'");
+await writeFile(path.join(ROOT, 'scripts/i18n-data/phrases.mjs'), phrases);
+
+console.log('Done adapting i18n pages.');

@@ -51,8 +51,8 @@ function buildI18nContent() {
 
 		// Validate required page keys
 		const requiredPages = [
-			'home', 'delta-force-esp', 'delta-force-aimbot', 'features', 'pricing', 'setup',
-			'updates', 'faq', 'support', 'undetected', 'wallhack', 'radar', 'ricochet',
+			'home', 'tarkov-esp', 'tarkov-aimbot', 'features', 'pricing', 'setup',
+			'updates', 'faq', 'support', 'undetected', 'wallhack', 'radar', 'battleye',
 			'cheats-2026', 'hacks', 'cheat-download', 'mod-menu', 'soft-aim', 'best-cheats',
 			'aimbot-hack', 'esp-hack', 'unlock-all', 'privacy', 'refund', 'terms',
 		];
@@ -61,7 +61,7 @@ function buildI18nContent() {
 			const p = pages[pageId];
 			if (p.title.length > 60) console.warn(`WARN [${locale}/${pageId}] title ${p.title.length} chars: ${p.title}`);
 			if (p.description.length > 160) console.warn(`WARN [${locale}/${pageId}] desc ${p.description.length} chars`);
-			if (!p.heroImage?.startsWith('/images/delta-force') && !p.heroImage?.startsWith('/images/hero-banner')) {
+			if (!p.heroImage?.startsWith('/images/tarkov') && !p.heroImage?.startsWith('/images/escape-from-tarkov')) {
 				throw new Error(`Invalid heroImage for ${locale}/${pageId}: ${p.heroImage}`);
 			}
 			if (pageId === 'home' && p.sections.length !== 2) {

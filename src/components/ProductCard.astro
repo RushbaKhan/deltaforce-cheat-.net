@@ -4,6 +4,7 @@ import { getUi } from '../data/i18n';
 import { defaultLocale, type LocaleCode } from '../data/i18n/locales';
 import { productInfo, siteConfig } from '../data/site';
 import { contentSrcSet, productMainSizes } from '../lib/responsive-images';
+import { getT } from '../i18n/server';
 
 interface Props {
 	name?: string;
@@ -12,6 +13,7 @@ interface Props {
 
 const locale = Astro.props.locale ?? defaultLocale;
 const ui = getUi(locale);
+const t = getT(locale);
 const { name = ui.product.title } = Astro.props;
 
 const productAlts = [
@@ -28,7 +30,7 @@ const mainAlt = productAlts[0] ?? mainImage.alt;
 const monthlyPlan = productInfo.plans.find((plan) => plan.id === 'monthly') ?? productInfo.plans[0];
 ---
 
-<section class="product surface-card" id="product" aria-label="Product details">
+<section class="product surface-card" id="product" aria-label={t('common.productDetails')}>
 	<figure class="product__figure media-frame">
 		<img
 			src={mainImage.src}

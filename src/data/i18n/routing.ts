@@ -1,4 +1,5 @@
 import { siteConfig } from '../site';
+import { getCannibalTargetId, isCannibalPageId } from '../seo-cannibal-map';
 import {
 	defaultLocale,
 	isLocaleCode,

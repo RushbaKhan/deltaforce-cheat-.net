@@ -3,6 +3,7 @@ import { getUi } from '../data/i18n';
 import { getGalleryUi } from '../data/i18n/gallery-ui';
 import { getLocalizedPath } from '../data/i18n/routing';
 import { defaultLocale, type LocaleCode } from '../data/i18n/locales';
+import { getT } from '../i18n/server';
 
 interface Crumb {
 	label: string;
@@ -17,6 +18,7 @@ interface Props {
 const locale = Astro.props.locale ?? defaultLocale;
 const ui = getUi(locale);
 const gallery = getGalleryUi(locale);
+const t = getT(locale);
 
 const {
 	items = [
@@ -28,7 +30,7 @@ const {
 const updatesHref = getLocalizedPath('updates', locale);
 ---
 
-<nav class="crumb-bar" aria-label="Breadcrumb">
+<nav class="crumb-bar" aria-label={t('common.breadcrumb')}>
 	<div class="crumb-bar__inner">
 		<ol class="crumb-bar__list">
 			{

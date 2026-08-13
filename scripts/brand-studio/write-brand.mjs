@@ -71,32 +71,32 @@ const SITEMAP_TEXT_KEYS = [
 
 const DEFAULT_SITEMAP_IMAGES = [
 	{
-		src: '/images/warzone-esp-player-tags.webp',
+		src: '/images/tarkov-esp-player-tags.webp',
 		title: '{primaryKeyword} ESP',
 		caption: 'See players with {primaryKeyword}',
 	},
 	{
-		src: '/images/warzone-wallhack-skeleton.webp',
+		src: '/images/tarkov-wallhack-skeleton.webp',
 		title: '{primaryKeyword} wallhack',
 		caption: 'See through walls with {primaryKeyword}',
 	},
 	{
-		src: '/images/warzone-aimbot-sniper.webp',
+		src: '/images/tarkov-aimbot-sniper.webp',
 		title: '{primaryKeyword} aimbot',
 		caption: 'Aimbot in {primaryKeyword}',
 	},
 	{
-		src: '/images/warzone-aimbot-skeleton.webp',
+		src: '/images/tarkov-aimbot-skeleton.webp',
 		title: '{primaryKeyword} aimbot view',
 		caption: 'Aimbot bone view in {primaryKeyword}',
 	},
 	{
-		src: '/images/warzone-esp-radar.webp',
+		src: '/images/tarkov-esp-radar.webp',
 		title: '{primaryKeyword} radar',
 		caption: 'Radar map in {primaryKeyword}',
 	},
 	{
-		src: '/images/warzone-cheats-combat.webp',
+		src: '/images/tarkov-cheats-combat.webp',
 		title: '{primaryKeyword} in a fight',
 		caption: 'Fight view with {primaryKeyword}',
 	},
@@ -364,10 +364,10 @@ export function validateBrandPayload(body) {
 	const lifetime = price(b.lifetimePrice ?? b.lifetime);
 	const monthlyLabel = soft(b.monthlyLabel, 'Monthly', 40);
 	const lifetimeLabel = soft(b.lifetimeLabel, 'Lifetime', 40);
-	const logo = assetPath(b.logo ?? '/images/warzone-hacks-logo.webp');
-	const logoRaster = assetPath(b.logoRaster ?? '/images/warzone-hacks-logo.png');
-	const defaultOgImage = assetPath(b.defaultOgImage ?? '/images/warzone-cheats-combat.webp');
-	const heroImage = assetPath(b.heroImage ?? '/images/warzone-hero-banner.webp');
+	const logo = assetPath(b.logo ?? '/images/tarkov-cheats-logo.webp');
+	const logoRaster = assetPath(b.logoRaster ?? '/images/tarkov-cheats-logo.png');
+	const defaultOgImage = assetPath(b.defaultOgImage ?? '/images/tarkov-cheats-combat.webp');
+	const heroImage = assetPath(b.heroImage ?? '/images/tarkov-hero-banner.webp');
 	const logoAlt = soft(b.logoAlt, `${name || 'Brand'} logo`, 120);
 	const logoW = price(b.logoRasterWidth ?? 512) ?? 512;
 	const logoH = price(b.logoRasterHeight ?? 512) ?? 512;

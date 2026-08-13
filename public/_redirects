@@ -1,7 +1,48 @@
-# Brand Studio — never publicly routable on Cloudflare Pages
-/brand-studio /404.html 404
-/brand-studio/ /404.html 404
-/brand-studio/* /404.html 404
-/__brand /404.html 404
-/__brand/ /404.html 404
-/__brand/* /404.html 404
+# Brand Studio — blocked on deploy (Workers assets reject status 404; use 200 → 404 page)
+/brand-studio /404.html 200
+/brand-studio/ /404.html 200
+/brand-studio/* /404.html 200
+/__brand /404.html 200
+/__brand/ /404.html 200
+/__brand/* /404.html 200
+
+# Legacy sitemap URL → primary index (GSC / old crawlers)
+/sitemap-index.xml /sitemap.xml 301
+
+# Exact-match keyword + cannibalization → canonical EN landings
+/call-of-duty-delta-force-cheats /delta-force-cheats/ 301
+/call-of-duty-delta-force-cheats/ /delta-force-cheats/ 301
+/delta-force-esp-hack /delta-force-esp/ 301
+/delta-force-esp-hack/ /delta-force-esp/ 301
+/delta-force-aimbot-hack /delta-force-aimbot/ 301
+/delta-force-aimbot-hack/ /delta-force-aimbot/ 301
+/best-delta-force-cheats /delta-force-cheats/ 301
+/best-delta-force-cheats/ /delta-force-cheats/ 301
+/delta-force-cheats-2026 /delta-force-cheats/ 301
+/delta-force-cheats-2026/ /delta-force-cheats/ 301
+/undetected-delta-force-cheats /delta-force-cheats/ 301
+/undetected-delta-force-cheats/ /delta-force-cheats/ 301
+/delta-force-cheat-menu /delta-force-cheats/ 301
+/delta-force-cheat-menu/ /delta-force-cheats/ 301
+/delta-force-cloud-dma /delta-force-cheats/ 301
+/delta-force-cloud-dma/ /delta-force-cheats/ 301
+/delta-force-aim-assist /delta-force-aimbot/ 301
+/delta-force-aim-assist/ /delta-force-aimbot/ 301
+/delta-force-wallhack /delta-force-esp/ 301
+/delta-force-wallhack/ /delta-force-esp/ 301
+/delta-force-cheat-download /setup/ 301
+/delta-force-cheat-download/ /setup/ 301
+/delta-force-anti-cheat-bypass /updates/ 301
+/delta-force-anti-cheat-bypass/ /updates/ 301
+
+# Legacy game domains → delta pillars
+/warzone-cheats /delta-force-cheats/ 301
+/warzone-cheats/ /delta-force-cheats/ 301
+/warzone-hacks /delta-force-cheats/ 301
+/warzone-hacks/ /delta-force-cheats/ 301
+/warzone-esp /delta-force-esp/ 301
+/warzone-esp/ /delta-force-esp/ 301
+/warzone-aimbot /delta-force-aimbot/ 301
+/warzone-aimbot/ /delta-force-aimbot/ 301
+/fortnite-hacks /delta-force-cheats/ 301
+/fortnite-hacks/ /delta-force-cheats/ 301

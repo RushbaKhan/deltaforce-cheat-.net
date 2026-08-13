@@ -2,27 +2,29 @@
 import { getLocalizedPath } from '../data/i18n/routing';
 import { defaultLocale, type LocaleCode } from '../data/i18n/locales';
 import { getBlogBasePath } from '../data/blog/helpers';
+import { getT } from '../i18n/server';
 
 interface Props {
 	locale?: LocaleCode;
 }
 
 const locale = Astro.props.locale ?? defaultLocale;
+const t = getT(locale);
 
 const categories = [
-	{ label: 'Hacks', href: getLocalizedPath('hacks', locale) },
-	{ label: 'ESP', href: getLocalizedPath('delta-force-esp', locale) },
-	{ label: 'Aimbot', href: getLocalizedPath('delta-force-aimbot', locale) },
-	{ label: 'Radar', href: getLocalizedPath('radar', locale) },
-	{ label: 'Wallhack', href: getLocalizedPath('wallhack', locale) },
-	{ label: 'Undetected', href: getLocalizedPath('undetected', locale) },
-	{ label: 'Pricing', href: getLocalizedPath('pricing', locale) },
-	{ label: 'Setup', href: getLocalizedPath('setup', locale) },
-	{ label: 'Blog', href: getBlogBasePath(locale) },
+	{ label: t('categoryRow.hacks'), href: getLocalizedPath('hacks', locale) },
+	{ label: t('categoryRow.esp'), href: getLocalizedPath('delta-force-esp', locale) },
+	{ label: t('categoryRow.aimbot'), href: getLocalizedPath('delta-force-aimbot', locale) },
+	{ label: t('categoryRow.radar'), href: getLocalizedPath('radar', locale) },
+	{ label: t('categoryRow.wallhack'), href: getLocalizedPath('wallhack', locale) },
+	{ label: t('categoryRow.undetected'), href: getLocalizedPath('undetected', locale) },
+	{ label: t('categoryRow.pricing'), href: getLocalizedPath('pricing', locale) },
+	{ label: t('categoryRow.setup'), href: getLocalizedPath('setup', locale) },
+	{ label: t('categoryRow.blog'), href: getBlogBasePath(locale) },
 ];
 ---
 
-<nav class="cats" aria-label="Browse">
+<nav class="cats" aria-label={t('common.browse')}>
 	<div class="shell">
 		<ul class="cats__list">
 			{

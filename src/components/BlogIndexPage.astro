@@ -14,6 +14,7 @@ import { blogLabel, siteConfig } from '../data/site';
 import { brandSeo, seoPageTitle } from '../data/site-core';
 import { seoDescription } from '../data/brand';
 import { getLocalizedPath } from '../data/i18n/routing';
+import { getT } from '../i18n/server';
 
 interface Props {
 	locale: LocaleCode;
@@ -21,6 +22,7 @@ interface Props {
 
 const { locale } = Astro.props;
 const ui = blogUi[locale];
+const t = getT(locale);
 const posts = getAllPostsForLocale(locale);
 const featured = getFeaturedPosts(locale, 3);
 const canonicalPath = getBlogBasePath(locale);
@@ -58,6 +60,8 @@ const articleListSchema = {
 	canonicalPath={canonicalPath}
 	hreflangAlternates={hreflangAlternates}
 	locale={locale}
+	ogImage={siteConfig.defaultOgImage}
+	ogImageAlt={ui.blogH1}
 	breadcrumbs={[{ label: ui.home, href: homeHref }, { label: ui.blogH1 }]}
 	extraGraph={[articleListSchema]}
 >
@@ -72,7 +76,7 @@ const articleListSchema = {
 
 		{
 			featured.length > 0 && (
-				<section class="blog__featured" aria-label="Featured">
+				<section class="blog__featured" aria-label={t('common.featured')}>
 					{
 						featured.map((post, index) => (
 							<a class="blog__feature-card" href={post.canonicalPath}>

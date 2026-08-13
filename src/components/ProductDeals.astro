@@ -2,54 +2,61 @@
 import { getLocalizedPath } from '../data/i18n/routing';
 import { defaultLocale, type LocaleCode } from '../data/i18n/locales';
 import { productInfo, siteConfig } from '../data/site';
+import { getT } from '../i18n/server';
 
 interface Props {
 	locale?: LocaleCode;
 }
 
 const locale = Astro.props.locale ?? defaultLocale;
+const t = getT(locale);
 const monthly = productInfo.plans.find((p) => p.id === 'monthly') ?? productInfo.plans[0];
 const lifetime = productInfo.plans.find((p) => p.id === 'lifetime') ?? productInfo.plans[1];
 
-const included = ['ESP / wallhack', 'Soft aim & hotkeys', '2D radar', 'Patch updates'];
+const included = [
+	t('deals.featEsp'),
+	t('deals.featAim'),
+	t('deals.featRadar'),
+	t('deals.featUpdates'),
+];
 ---
 
 <section class="shop" aria-labelledby="shop-title">
 	<div class="shell">
 		<header class="shop__head">
 			<div>
-				<p class="shop__eyebrow">Pricing</p>
-				<h2 id="shop-title">Choose your license</h2>
+				<p class="shop__eyebrow">{t('deals.pricing')}</p>
+				<h2 id="shop-title">{t('deals.chooseLicense')}</h2>
 			</div>
-			<a class="shop__features" href={getLocalizedPath('features', locale)}>Features</a>
+			<a class="shop__features" href={getLocalizedPath('features', locale)}>{t('deals.features')}</a>
 		</header>
 
 		<div class="shop__grid">
 			<article class="plan plan--featured">
-				<p class="plan__name">{monthly.label}</p>
+				<p class="plan__name">{t('product.monthly')}</p>
 				<p class="plan__price">
 					<span>${monthly.price}</span>
-					<small>/ month</small>
+					<small>{t('product.perMonth')}</small>
 				</p>
 				<ul class="plan__list">
 					{included.map((item) => <li>{item}</li>)}
 				</ul>
 				<a class="plan__cta plan__cta--solid" href={siteConfig.checkoutUrl} rel="noopener noreferrer">
-					Buy monthly
+					{t('product.buyMonthly')}
 				</a>
 			</article>
 
 			<article class="plan">
-				<p class="plan__name">{lifetime.label}</p>
+				<p class="plan__name">{t('product.lifetime')}</p>
 				<p class="plan__price">
 					<span>${lifetime.price}</span>
-					<small> once</small>
+					<small>{t('product.once')}</small>
 				</p>
 				<ul class="plan__list">
 					{included.map((item) => <li>{item}</li>)}
 				</ul>
 				<a class="plan__cta" href={siteConfig.checkoutUrl} rel="noopener noreferrer">
-					Buy lifetime
+					{t('product.buyLifetime')}
 				</a>
 			</article>
 		</div>

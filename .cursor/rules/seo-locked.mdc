@@ -45,7 +45,7 @@ Also update as needed:
 
 - FAQs / reviews meta in `src/data/site.ts` (keep `{brand}` `{game}` `{antiCheat}` `{email}` tokens)
 - EN copy in `src/data/i18n/simple-pages.ts`
-- Images + `src/data/warzone.ts` paths
+- Images + `src/data/tarkov.ts` paths
 - Sitemap labels in `brand.sitemap` (or Brand Studio → Sitemap) — domain is always `brand.url` (Site URL); XML regenerates from routes + that domain
 - Site colors in `brand.theme` (or Brand Studio → Colors) — accent + bg; soft/deep/panels auto-derive
 - Keyword landing hrefs if slugs change
@@ -65,12 +65,12 @@ Do **not** invent a new SEO architecture, title pattern, or dense paragraph styl
 ## Bad vs good
 
 ```text
-❌ BAD H1: Ultimate Undetected Call of Duty Warzone Hacks Feature Control List 2026
+❌ BAD H1: Ultimate Undetected Escape from Tarkov Hacks Feature Control List 2026
 ✅ GOOD H1: Features
 
-❌ BAD intro: Warzone Hacks is the undetected warzone hacks package also searched as warzone cheats…
-✅ GOOD intro: Everything included in one license for Warzone on Windows PC.
+❌ BAD intro: Tarkov Cheats is the undetected tarkov cheats package also searched as tarkov cheats…
+✅ GOOD intro: Everything included in one license for Tarkov on Windows PC.
 
-❌ BAD: Hardcode "Warzone Hacks" in Hero.astro
+❌ BAD: Hardcode "Tarkov Cheats" in Hero.astro
 ✅ GOOD: {siteConfig.name}
 ```

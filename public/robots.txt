@@ -4,5 +4,7 @@ Allow: /images/
 Disallow: /brand-studio/
 Disallow: /brand-studio
 Disallow: /__brand/
-Disallow: /__brand # Primary sitemap for Google Search Console — index covers EN, locale, and image sitemaps.
+Disallow: /__brand
+
+# Primary sitemap for Google Search Console — index covers EN, locale, and image sitemaps.
 Sitemap: https://deltaforcecheat.net/sitemap.xml

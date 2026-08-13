@@ -1,11 +1,15 @@
 ---
-import LanguageSwitcher from './LanguageSwitcher.astro';
-import { getLocalizedPath, resolvePageContextFromPath, type PageId } from '../data/i18n/routing';
-import { defaultLocale, type LocaleCode } from '../data/i18n/locales';
+import NavbarApp from './react/Navbar';
+import {
+	getLocalizedPath,
+	getPageLocaleSwitchHref,
+	resolvePageContextFromPath,
+	type PageId,
+} from '../data/i18n/routing';
+import { defaultLocale, locales, type LocaleCode } from '../data/i18n/locales';
 import { reviewsBasePath } from '../data/reviews';
 import { siteConfig } from '../data/site';
-import { brandCopy } from '../data/site-core';
-import { fillBrandTokens } from '../data/brand';
+import { getBlogLocaleSwitchHref, isBlogPath } from '../data/blog/helpers';
 
 interface Props {
 	locale?: LocaleCode;
@@ -16,180 +20,53 @@ const { locale = defaultLocale, pageId: pageIdProp } = Astro.props;
 const pathContext = resolvePageContextFromPath(Astro.url.pathname);
 const pageId = pageIdProp ?? pathContext.pageId ?? 'home';
 const current = Astro.url.pathname;
+const onBlog = isBlogPath(current);
+
+const pageContext = onBlog
+	? pathContext
+	: {
+			...pathContext,
+			pageId: pathContext.pageId ?? pageId,
+		};
+
+function localeSwitchHref(targetLocale: LocaleCode): string {
+	if (onBlog) return getBlogLocaleSwitchHref(current, targetLocale);
+	return getPageLocaleSwitchHref(pageContext, targetLocale);
+}
+
+const hrefForLocale = Object.fromEntries(
+	locales.map((l) => [l.code, localeSwitchHref(l.code)]),
+) as Record<string, string>;
+
+const localeMetas = locales.map((l) => ({
+	code: l.code,
+	name: l.name,
+	nativeName: l.nativeName,
+	hreflang: l.hreflang,
+	region: l.region,
+}));
 
 const links = [
-	{
-		id: 'hacks',
-		label: fillBrandTokens(brandCopy.navPreview),
-		edit: 'navPreview',
-		href: getLocalizedPath('hacks', locale),
-	},
-	{
-		id: 'esp',
-		label: fillBrandTokens(brandCopy.navFeatures),
-		edit: 'navFeatures',
-		href: getLocalizedPath('features', locale),
-	},
-	{
-		id: 'pricing',
-		label: fillBrandTokens(brandCopy.navStore),
-		edit: 'navStore',
-		href: getLocalizedPath('pricing', locale),
-	},
-	{
-		id: 'updates',
-		label: fillBrandTokens(brandCopy.navStatus),
-		edit: 'navStatus',
-		href: getLocalizedPath('updates', locale),
-	},
-	{
-		id: 'reviews',
-		label: fillBrandTokens(brandCopy.navReviews),
-		edit: 'navReviews',
-		href: reviewsBasePath,
-	},
-] as const;
-
-const buyShort = fillBrandTokens(brandCopy.ctaBuyShort);
-
-const icons: Record<(typeof links)[number]['id'], string> = {
-	hacks:
-		'M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7L12 3.5zm0 2.2L6.8 8.5v6.9L12 18.3l5.2-2.9V8.5L12 5.7z',
-	esp: 'M12 5a7 7 0 100 14 7 7 0 000-14zm0 2.2a4.8 4.8 0 110 9.6 4.8 4.8 0 010-9.6zM12 10.2v2.4l1.8 1.1',
-	pricing:
-		'M7.5 7.2h9M7.5 12h9M7.5 16.8H14M5 4.8h14a1.2 1.2 0 011.2 1.2v12a1.2 1.2 0 01-1.2 1.2H5A1.2 1.2 0 013.8 18V6A1.2 1.2 0 015 4.8z',
-	updates:
-		'M12 4.2v3.2M12 16.6v3.2M4.2 12h3.2M16.6 12h3.2M7.1 7.1l2.3 2.3M14.6 14.6l2.3 2.3M16.9 7.1l-2.3 2.3M9.4 14.6l-2.3 2.3',
-	reviews:
-		'M12 4.5l1.8 4.9H19l-4.1 3.2 1.6 5L12 14.9 7.5 17.6l1.6-5L5 9.4h5.2L12 4.5z',
-};
-
-const isActive = (href: string) => {
-	if (href === '/') return current === '/' || current === `/${locale}/`;
-	if (href === reviewsBasePath) return current === href || current.startsWith(`${href}`);
-	return current === href || current.startsWith(href);
-};
+	{ id: 'hacks', labelKey: 'nav.preview', edit: 'navPreview', href: getLocalizedPath('hacks', locale) },
+	{ id: 'esp', labelKey: 'nav.features', edit: 'navFeatures', href: getLocalizedPath('features', locale) },
+	{ id: 'pricing', labelKey: 'nav.store', edit: 'navStore', href: getLocalizedPath('pricing', locale) },
+	{ id: 'updates', labelKey: 'nav.status', edit: 'navStatus', href: getLocalizedPath('updates', locale) },
+	{ id: 'reviews', labelKey: 'nav.reviews', edit: 'navReviews', href: reviewsBasePath },
+];
 ---
 
-<header class="site-header" data-nav>
-	<div class="shell site-header__bar">
-		<a class="site-brand" href={getLocalizedPath('home', locale)} data-edit="name">
-			{siteConfig.name}
-		</a>
-		<nav class="site-nav" aria-label="Primary">
-			{
-				links.map((item) => (
-					<a href={item.href} class:list={[{ 'is-active': isActive(item.href) }]}>
-						<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-							<path
-								d={icons[item.id]}
-								stroke="currentColor"
-								stroke-width="1.6"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-						<span data-edit={item.edit}>{item.label}</span>
-					</a>
-				))
-			}
-		</nav>
-
-		<div class="site-tools">
-			<div class="site-tools__lang">
-				<LanguageSwitcher pageId={pageId} currentLocale={locale} />
-			</div>
-			<a
-				href={siteConfig.checkoutUrl}
-				class="site-tools__buy"
-				rel="noopener noreferrer"
-				aria-label={buyShort}
-			>
-				<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-					<path
-						d="M4.5 6.5h2.1l1.2 9.2h9.4l1.8-6.6H8.1M9.2 19.2a.9.9 0 100-1.8.9.9 0 000 1.8zm7.4 0a.9.9 0 100-1.8.9.9 0 000 1.8z"
-						stroke="currentColor"
-						stroke-width="1.6"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-				<span data-edit="ctaBuyShort">{buyShort}</span>
-			</a>
-			<button
-				type="button"
-				class="site-menu"
-				data-nav-toggle
-				aria-expanded="false"
-				aria-controls="site-nav-panel"
-				aria-label="Open menu"
-			>
-				<span class="site-menu__bars" aria-hidden="true">
-					<span></span><span></span><span></span>
-				</span>
-			</button>
-		</div>
-	</div>
-
-	<div class="site-panel" id="site-nav-panel" data-nav-panel hidden>
-		<div class="shell site-panel__inner">
-			{/* Populated from desktop nav via JS — avoids duplicate anchor text in the HTML for crawlers */}
-			<nav class="site-panel__nav" aria-label="Mobile" data-nav-clone></nav>
-			<div class="site-panel__foot">
-				<div class="site-panel__lang">
-					<LanguageSwitcher pageId={pageId} currentLocale={locale} />
-				</div>
-				<a href={siteConfig.checkoutUrl} class="site-panel__buy" rel="noopener noreferrer">
-					<span data-edit="ctaBuy">{fillBrandTokens(brandCopy.ctaBuy)}</span>
-				</a>
-			</div>
-		</div>
-	</div>
-</header>
-
-<script>
-	const header = document.querySelector('[data-nav]');
-	if (header instanceof HTMLElement) {
-		const toggle = header.querySelector('[data-nav-toggle]');
-		const panel = header.querySelector('[data-nav-panel]');
-		const desktopNav = header.querySelector('.site-nav');
-		const mobileNav = header.querySelector('[data-nav-clone]');
-		if (desktopNav instanceof HTMLElement && mobileNav instanceof HTMLElement) {
-			mobileNav.innerHTML = desktopNav.innerHTML;
-		}
-
-		const setOpen = (open: boolean) => {
-			toggle?.setAttribute('aria-expanded', String(open));
-			toggle?.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-			if (panel instanceof HTMLElement) panel.hidden = !open;
-			header.classList.toggle('is-open', open);
-			document.body.classList.toggle('nav-lock', open);
-		};
-
-		toggle?.addEventListener('click', () => {
-			const open = toggle.getAttribute('aria-expanded') !== 'true';
-			setOpen(open);
-		});
-
-		panel?.querySelectorAll('a').forEach((link) => {
-			link.addEventListener('click', () => setOpen(false));
-		});
-
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape') setOpen(false);
-		});
-
-		const onScroll = () => {
-			header.classList.toggle('is-scrolled', window.scrollY > 8);
-		};
-		onScroll();
-		window.addEventListener('scroll', onScroll, { passive: true });
-
-		window.addEventListener('resize', () => {
-			if (window.matchMedia('(min-width: 1025px)').matches) setOpen(false);
-		});
-	}
-</script>
+<NavbarApp
+	client:load
+	locale={locale}
+	siteName={siteConfig.name}
+	checkoutUrl={siteConfig.checkoutUrl}
+	currentPath={current}
+	homeHref={getLocalizedPath('home', locale)}
+	reviewsBasePath={reviewsBasePath}
+	locales={localeMetas}
+	hrefForLocale={hrefForLocale}
+	links={links}
+/>
 
 <style is:global>
 	body.nav-lock {
@@ -273,17 +150,15 @@ const isActive = (href: string) => {
 		max-height: 12rem;
 		box-shadow: none;
 	}
-</style>
 
-<style>
 	.site-header {
 		position: sticky;
 		top: 0;
 		z-index: 100;
 		padding-top: var(--safe-top, env(safe-area-inset-top, 0px));
 		background: color-mix(in srgb, var(--bg) 72%, transparent);
-		backdrop-filter: blur(14px) saturate(1.2);
-		-webkit-backdrop-filter: blur(14px) saturate(1.2);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 		border-bottom: 1px solid transparent;
 		transition:
 			background 0.2s ease,

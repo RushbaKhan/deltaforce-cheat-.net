@@ -1,21 +1,281 @@
 #!/usr/bin/env node
-/** * One-time migration: Fortnite Cheats → Delta Force Cheats. * Run from project root: node scripts/adapt-delta-force.mjs */
+/**
+ * One-time migration: Fortnite Cheats → Warzone Hacks.
+ * Run from project root: node scripts/adapt-warzone.mjs
+ */
 import { readFile, writeFile, readdir, rm, rename, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url'; const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'); const RENAME_PAGE_DIRS = [ ['fortnite-aimbot', 'delta-force-aimbot'], ['fortnite-esp', 'delta-force-esp'], ['fortnite-wallhack', 'delta-force-wallhack'], ['fortnite-radar-hack', 'delta-force-radar'], ['undetected-fortnite-cheats', 'undetected-delta-force-cheats'], ['fortnite-cheats-2026', 'delta-force-cheats-2026'], ['eac-bypass-fortnite', 'delta-force-anti-cheat-bypass'], ['fortnite-hacks', 'delta-force-cheats'], ['fortnite-cheat-download', 'delta-force-cheat-download'], ['fortnite-mod-menu', 'delta-force-cheat-menu'], ['fortnite-soft-aim', 'delta-force-aim-assist'], ['best-fortnite-cheats', 'best-delta-force-cheats'], ['fortnite-aimbot-hack', 'delta-force-aimbot-hack'], ['fortnite-esp-hack', 'delta-force-esp-hack'], ['fortnite-unlock-all', 'delta-force-cloud-dma'],
-]; /** Ordered replacements — specific patterns first. */
-const REPLACEMENTS = [ ['fortnitehack.net', 'delta-forcescheats.net'], ['fortnitecheats.xyz', 'delta-forcescheats.xyz'], ['fortnitecheats.net', 'delta-forcescheats.net'], ['fortnitecheats.com', 'delta-forcescheats.com'], ['support@fortnitehack.net', 'support@delta-forcescheats.net'], ['/products/fortnite', '/products/delta-force'], ['fortnite-esp-wallhack', 'delta-force-esp-wallhack'], ['fortnite-esp-hack', 'delta-force-esp-hack'], ['fortnite-aimbot-hack', 'delta-force-aimbot-hack'], ['undetected-fortnite-cheats', 'undetected-delta-force-cheats'], ['fortnite-cheats-2026', 'delta-force-cheats-2026'], ['fortnite-radar-hack', 'delta-force-radar'], ['fortnite-wallhack', 'delta-force-wallhack'], ['eac-bypass-fortnite', 'delta-force-anti-cheat-bypass'], ['fortnite-cheat-download', 'delta-force-cheat-download'], ['fortnite-mod-menu', 'delta-force-cheat-menu'], ['fortnite-soft-aim', 'delta-force-aim-assist'], ['best-fortnite-cheats', 'best-delta-force-cheats'], ['fortnite-unlock-all', 'delta-force-cloud-dma'], ['fortnite-hacks', 'delta-force-cheats'], ['fortnite-aimbot', 'delta-force-aimbot'], ['fortnite-esp', 'delta-force-esp'], ["'eac-bypass'", "'ricochet'"], ['| eac-bypass', '| ricochet'], ['fortnite-cheats', 'call-of-duty-delta-force-cheats'], ['call-of-duty-delta-force-cheats-buyers-guide', 'call-of-duty-delta-force-cheats-buyers-guide'], ['Fortnite Hacks', 'Delta Force Cheats'], ['Fortnite Cheats', 'Delta Force Cheats'], ['Fortnite cheats', 'Delta force cheats'], ['Fortnite cheat', 'Delta Force cheat'], ['FortniteCheatsSite', 'Delta ForceCheatsSite'], ['Fortnite Intel', 'Delta Force Intel'], ['Easy Anti-Cheat (EAC)', 'Ricochet anti-cheat'], ['Easy Anti-Cheat', 'Ricochet anti-cheat'], ['EAC maintenance', 'Ricochet maintenance'], ['EAC bypass', 'Ricochet bypass'], ['EAC Bypass', 'Ricochet Bypass'], ['EAC patches', 'Ricochet patches'], ['EAC patch', 'Ricochet patch'], ['EAC updates', 'Ricochet updates'], ['EAC update', 'Ricochet update'], ['after EAC', 'after Ricochet'], ['fortnite hacks', 'delta force cheats'], ['fortnite cheats', 'delta force cheats'], ['Battle Royale island, Zero Build, and competitive lobbies', 'Hazard Operations and Warfare maps'], ['Battle Royale island, Zero Build and competitive lobbies', 'Verdansk, Urzikstan and Rebirth Island'], ['Battle Royale island, Zero Build et lobbies compétitifs', 'Verdansk, Urzikstan et Rebirth Island'], ['Battle Royale island, Zero Build e lobbies competitivi', 'Verdansk, Urzikstan e Rebirth Island'], ['Battle Royale island, Zero Build und Competitive-Lobbys', 'Verdansk, Urzikstan und Rebirth Island'], ['reboot van rotations', 'gulag fights'], ['reboot van fight', 'gulag fight'], ['respawn rounds', 'gulag rounds'], ['reboot van', 'gulag'], ['Zero Build and Battle Royale', 'Hazard Operations and Battle Royale'], ['BR and Zero Build', 'Hazard Operations and Warfare'], ['BR & Zero Build', 'BR & Hazard Operations'], ['Zero Build', 'Hazard Operations'], ['loot chests', 'loadout drops'], ['loot chest', 'loadout drop'], ['Battle Royale island', 'Verdansk'], ['battle-royale-island', 'al-mazrah'], ['supply drop', 'UAV'], ['Operators', 'Operators'], ['operators', 'operators'], ['fortniteImages', 'delta-forceImages'], ["from './fortnite'", "from './delta-force'"], ["from '../data/fortnite'", "from '../data/delta-force'"], ['fortnitecheats', 'delta-forcescheats'], ['project-name=fortnitecheats', 'project-name=delta-forcescheats'], ['name = "fortnitecheats"', 'name = "delta-forcescheats"'], ['https://fortnitehack.net', 'https://delta-forcescheats.net'], ['trucos-fortnite', 'trucos-delta-force'], ['triche-fortnite', 'triche-delta-force'], ['cheats-fortnite', 'cheats-delta-force'], ['trucchi-fortnite', 'trucchi-delta-force'], ['cheaty-fortnite', 'cheaty-delta-force'], ['chity-fortnite', 'chity-delta-force'], ['chitov-fortnite', 'chitov-delta-force'], ['chitiv-fortnite', 'chitiv-delta-force'], ['cheatow-fortnite', 'cheatow-delta-force'], ['hile-fortnite', 'hile-delta-force'], ['fortnite-hile', 'delta-force-hile'], ['fortnite-esp-chity', 'delta-force-esp-chity'], ['fortnite-aimbot-chity', 'delta-force-aimbot-chity'], ['unentdeckte-fortnite-cheats', 'unentdeckte-delta-force-cheats'], ['cheats-fortnite-indetectaveis', 'cheats-delta-force-indetectaveis'], ['trucchi-fortnite-indetectabili', 'trucchi-delta-force-indetectabili'], ['niewykrywalne-cheats-fortnite', 'niewykrywalne-cheats-delta-force'], ['nedecektiruemye-chity-fortnite', 'nedecektiruemye-chity-delta-force'], ['tespit-edilemeyen-fortnite-hileleri', 'tespit-edilemeyen-delta-force-hileleri'], ['nedecektovani-chity-fortnite', 'nedecektovani-chity-delta-force'], ['cheats-fortnite-nedetectabile', 'cheats-delta-force-nedetectabile'], ['basta-fortnite-cheats', 'basta-delta-force-cheats'], ['fortnite-cheats-funktionen', 'delta-force-cheats-funktionen'], ['fortnite-cheats-functies', 'delta-force-cheats-functies'], ['caracteristicas-trucos-fortnite', 'caracteristicas-trucos-delta-force'], ['fonctionnalites-triche-fortnite', 'fonctionnalites-triche-delta-force'], ['recursos-cheats-fortnite', 'recursos-cheats-delta-force'], ['funzioni-trucchi-fortnite', 'funzioni-trucchi-fortnite'], ['Call of Duty: Delta Force', 'Call of Duty: Delta Force'], ['Call of Duty Delta Force', 'Call of Duty Delta Force'], ['Fortnite', 'Call of Duty: Delta Force'], ['fortnite', 'delta-force'], ['eac-bypass', 'delta-force-anti-cheat-bypass'], ['eac', 'ricochet'],
-]; const TEXT_EXTENSIONS = new Set([ '.ts', '.tsx', '.js', '.mjs', '.astro', '.css', '.json', '.toml', '.txt', '.md', '.html',
-]); const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.astro']); async function walk(dir, files = []) { const entries = await readdir(dir, { withFileTypes: true }); for (const entry of entries) { if (SKIP_DIRS.has(entry.name)) continue; const full = path.join(dir, entry.name); if (entry.isDirectory()) { await walk(full, files); } else { files.push(full); } } return files;
-} function applyReplacements(content) { let result = content; for (const [from, to] of REPLACEMENTS) { if (from === to) continue; result = result.split(from).join(to); } return result;
-} async function transformTextFiles() { const files = await walk(ROOT); let changed = 0; for (const file of files) { const ext = path.extname(file); if (!TEXT_EXTENSIONS.has(ext)) continue; if (file.endsWith('adapt-delta-force.mjs') || file.endsWith('adapt-fortnite.mjs')) continue; const original = await readFile(file, 'utf8'); const updated = applyReplacements(original); if (updated !== original) { await writeFile(file, updated, 'utf8'); changed++; } } console.log(`Transformed ${changed} text files`);
-} async function renamePageDirs() { for (const [from, to] of RENAME_PAGE_DIRS) { const src = path.join(ROOT, 'src', 'pages', from); const dest = path.join(ROOT, 'src', 'pages', to); try { await rename(src, dest); console.log(`Renamed page: ${from} → ${to}`); } catch (e) { console.warn(`Skip rename ${from}: ${e.message}`); } }
-} async function renameFortniteTs() { const from = path.join(ROOT, 'src', 'data', 'fortnite.ts'); const to = path.join(ROOT, 'src', 'data', 'delta-force.ts'); try { await rename(from, to); console.log('Renamed fortnite.ts → delta-force.ts'); } catch (e) { console.warn(`fortnite.ts rename: ${e.message}`); }
-} async function updatePageAstroFiles() { const idMap = { 'delta-force-aimbot': 'delta-force-aimbot', 'delta-force-esp': 'delta-force-esp', 'delta-force-wallhack': 'wallhack', 'delta-force-radar': 'radar', 'undetected-delta-force-cheats': 'undetected', 'delta-force-cheats-2026': 'cheats-2026', 'delta-force-anti-cheat-bypass': 'ricochet', 'delta-force-cheats': 'hacks', 'delta-force-cheat-download': 'cheat-download', 'delta-force-cheat-menu': 'mod-menu', 'delta-force-aim-assist': 'soft-aim', 'best-delta-force-cheats': 'best-cheats', 'delta-force-aimbot-hack': 'aimbot-hack', 'delta-force-esp-hack': 'esp-hack', 'delta-force-cloud-dma': 'unlock-all', }; for (const [dir, pageId] of Object.entries(idMap)) { const file = path.join(ROOT, 'src', 'pages', dir, 'index.astro'); try { const content = `---
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+const RENAME_PAGE_DIRS = [
+	['fortnite-aimbot', 'warzone-aimbot'],
+	['fortnite-esp', 'warzone-esp'],
+	['fortnite-wallhack', 'warzone-wallhack'],
+	['fortnite-radar-hack', 'warzone-radar-hack'],
+	['undetected-fortnite-cheats', 'undetected-warzone-cheats'],
+	['fortnite-cheats-2026', 'warzone-cheats-2026'],
+	['eac-bypass-fortnite', 'ricochet-bypass'],
+	['fortnite-hacks', 'warzone-hacks'],
+	['fortnite-cheat-download', 'warzone-cheat-download'],
+	['fortnite-mod-menu', 'warzone-mod-menu'],
+	['fortnite-soft-aim', 'warzone-soft-aim'],
+	['best-fortnite-cheats', 'best-warzone-cheats'],
+	['fortnite-aimbot-hack', 'warzone-aimbot-hack'],
+	['fortnite-esp-hack', 'warzone-esp-hack'],
+	['fortnite-unlock-all', 'warzone-unlock-all'],
+];
+
+/** Ordered replacements — specific patterns first. */
+const REPLACEMENTS = [
+	['fortnitehack.net', 'warzonescheats.net'],
+	['fortnitecheats.xyz', 'warzonescheats.xyz'],
+	['fortnitecheats.net', 'warzonescheats.net'],
+	['fortnitecheats.com', 'warzonescheats.com'],
+	['support@fortnitehack.net', 'support@warzonescheats.net'],
+	['/products/fortnite', '/products/warzone'],
+	['fortnite-esp-wallhack', 'warzone-esp-wallhack'],
+	['fortnite-esp-hack', 'warzone-esp-hack'],
+	['fortnite-aimbot-hack', 'warzone-aimbot-hack'],
+	['undetected-fortnite-cheats', 'undetected-warzone-cheats'],
+	['fortnite-cheats-2026', 'warzone-cheats-2026'],
+	['fortnite-radar-hack', 'warzone-radar-hack'],
+	['fortnite-wallhack', 'warzone-wallhack'],
+	['eac-bypass-fortnite', 'ricochet-bypass'],
+	['fortnite-cheat-download', 'warzone-cheat-download'],
+	['fortnite-mod-menu', 'warzone-mod-menu'],
+	['fortnite-soft-aim', 'warzone-soft-aim'],
+	['best-fortnite-cheats', 'best-warzone-cheats'],
+	['fortnite-unlock-all', 'warzone-unlock-all'],
+	['fortnite-hacks', 'warzone-hacks'],
+	['fortnite-aimbot', 'warzone-aimbot'],
+	['fortnite-esp', 'warzone-esp'],
+	["'eac-bypass'", "'ricochet'"],
+	['| eac-bypass', '| ricochet'],
+	['fortnite-cheats', 'call-of-duty-warzone-cheats'],
+	['call-of-duty-warzone-cheats-buyers-guide', 'call-of-duty-warzone-cheats-buyers-guide'],
+	['Fortnite Hacks', 'Warzone Hacks'],
+	['Fortnite Cheats', 'Warzone Cheats'],
+	['Fortnite cheats', 'Warzone cheats'],
+	['Fortnite cheat', 'Warzone cheat'],
+	['FortniteCheatsSite', 'WarzoneCheatsSite'],
+	['Fortnite Intel', 'Warzone Intel'],
+	['Easy Anti-Cheat (EAC)', 'Ricochet anti-cheat'],
+	['Easy Anti-Cheat', 'Ricochet anti-cheat'],
+	['EAC maintenance', 'Ricochet maintenance'],
+	['EAC bypass', 'Ricochet bypass'],
+	['EAC Bypass', 'Ricochet Bypass'],
+	['EAC patches', 'Ricochet patches'],
+	['EAC patch', 'Ricochet patch'],
+	['EAC updates', 'Ricochet updates'],
+	['EAC update', 'Ricochet update'],
+	['after EAC', 'after Ricochet'],
+	['fortnite hacks', 'warzone hacks'],
+	['fortnite cheats', 'warzone cheats'],
+	['Battle Royale island, Zero Build, and competitive lobbies', 'Verdansk, Urzikstan, and Rebirth Island'],
+	['Battle Royale island, Zero Build and competitive lobbies', 'Verdansk, Urzikstan and Rebirth Island'],
+	['Battle Royale island, Zero Build et lobbies compétitifs', 'Verdansk, Urzikstan et Rebirth Island'],
+	['Battle Royale island, Zero Build e lobbies competitivi', 'Verdansk, Urzikstan e Rebirth Island'],
+	['Battle Royale island, Zero Build und Competitive-Lobbys', 'Verdansk, Urzikstan und Rebirth Island'],
+	['reboot van rotations', 'gulag fights'],
+	['reboot van fight', 'gulag fight'],
+	['respawn rounds', 'gulag rounds'],
+	['reboot van', 'gulag'],
+	['Zero Build and Battle Royale', 'Resurgence and Battle Royale'],
+	['BR and Zero Build', 'BR and Resurgence'],
+	['BR & Zero Build', 'BR & Resurgence'],
+	['Zero Build', 'Resurgence'],
+	['loot chests', 'loadout drops'],
+	['loot chest', 'loadout drop'],
+	['Battle Royale island', 'Verdansk'],
+	['battle-royale-island', 'al-mazrah'],
+	['supply drop', 'UAV'],
+	['Operators', 'Operators'],
+	['operators', 'operators'],
+	['fortniteImages', 'warzoneImages'],
+	["from './fortnite'", "from './warzone'"],
+	["from '../data/fortnite'", "from '../data/warzone'"],
+	['fortnitecheats', 'warzonescheats'],
+	['project-name=fortnitecheats', 'project-name=warzonescheats'],
+	['name = "fortnitecheats"', 'name = "warzonescheats"'],
+	['https://fortnitehack.net', 'https://warzonescheats.net'],
+	['trucos-fortnite', 'trucos-warzone'],
+	['triche-fortnite', 'triche-warzone'],
+	['cheats-fortnite', 'cheats-warzone'],
+	['trucchi-fortnite', 'trucchi-warzone'],
+	['cheaty-fortnite', 'cheaty-warzone'],
+	['chity-fortnite', 'chity-warzone'],
+	['chitov-fortnite', 'chitov-warzone'],
+	['chitiv-fortnite', 'chitiv-warzone'],
+	['cheatow-fortnite', 'cheatow-warzone'],
+	['hile-fortnite', 'hile-warzone'],
+	['fortnite-hile', 'warzone-hile'],
+	['fortnite-esp-chity', 'warzone-esp-chity'],
+	['fortnite-aimbot-chity', 'warzone-aimbot-chity'],
+	['unentdeckte-fortnite-cheats', 'unentdeckte-warzone-cheats'],
+	['cheats-fortnite-indetectaveis', 'cheats-warzone-indetectaveis'],
+	['trucchi-fortnite-indetectabili', 'trucchi-warzone-indetectabili'],
+	['niewykrywalne-cheats-fortnite', 'niewykrywalne-cheats-warzone'],
+	['nedecektiruemye-chity-fortnite', 'nedecektiruemye-chity-warzone'],
+	['tespit-edilemeyen-fortnite-hileleri', 'tespit-edilemeyen-warzone-hileleri'],
+	['nedecektovani-chity-fortnite', 'nedecektovani-chity-warzone'],
+	['cheats-fortnite-nedetectabile', 'cheats-warzone-nedetectabile'],
+	['basta-fortnite-cheats', 'basta-warzone-cheats'],
+	['fortnite-cheats-funktionen', 'warzone-cheats-funktionen'],
+	['fortnite-cheats-functies', 'warzone-cheats-functies'],
+	['caracteristicas-trucos-fortnite', 'caracteristicas-trucos-warzone'],
+	['fonctionnalites-triche-fortnite', 'fonctionnalites-triche-warzone'],
+	['recursos-cheats-fortnite', 'recursos-cheats-warzone'],
+	['funzioni-trucchi-fortnite', 'funzioni-trucchi-fortnite'],
+	['Call of Duty: Warzone', 'Call of Duty: Warzone'],
+	['Call of Duty Warzone', 'Call of Duty Warzone'],
+	['Fortnite', 'Call of Duty: Warzone'],
+	['fortnite', 'warzone'],
+	['eac-bypass', 'ricochet-bypass'],
+	['eac', 'ricochet'],
+];
+
+const TEXT_EXTENSIONS = new Set([
+	'.ts', '.tsx', '.js', '.mjs', '.astro', '.css', '.json', '.toml', '.txt', '.md', '.html',
+]);
+
+const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.astro']);
+
+async function walk(dir, files = []) {
+	const entries = await readdir(dir, { withFileTypes: true });
+	for (const entry of entries) {
+		if (SKIP_DIRS.has(entry.name)) continue;
+		const full = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			await walk(full, files);
+		} else {
+			files.push(full);
+		}
+	}
+	return files;
+}
+
+function applyReplacements(content) {
+	let result = content;
+	for (const [from, to] of REPLACEMENTS) {
+		if (from === to) continue;
+		result = result.split(from).join(to);
+	}
+	return result;
+}
+
+async function transformTextFiles() {
+	const files = await walk(ROOT);
+	let changed = 0;
+	for (const file of files) {
+		const ext = path.extname(file);
+		if (!TEXT_EXTENSIONS.has(ext)) continue;
+		if (file.endsWith('adapt-warzone.mjs') || file.endsWith('adapt-fortnite.mjs')) continue;
+		const original = await readFile(file, 'utf8');
+		const updated = applyReplacements(original);
+		if (updated !== original) {
+			await writeFile(file, updated, 'utf8');
+			changed++;
+		}
+	}
+	console.log(`Transformed ${changed} text files`);
+}
+
+async function renamePageDirs() {
+	for (const [from, to] of RENAME_PAGE_DIRS) {
+		const src = path.join(ROOT, 'src', 'pages', from);
+		const dest = path.join(ROOT, 'src', 'pages', to);
+		try {
+			await rename(src, dest);
+			console.log(`Renamed page: ${from} → ${to}`);
+		} catch (e) {
+			console.warn(`Skip rename ${from}: ${e.message}`);
+		}
+	}
+}
+
+async function renameFortniteTs() {
+	const from = path.join(ROOT, 'src', 'data', 'fortnite.ts');
+	const to = path.join(ROOT, 'src', 'data', 'warzone.ts');
+	try {
+		await rename(from, to);
+		console.log('Renamed fortnite.ts → warzone.ts');
+	} catch (e) {
+		console.warn(`fortnite.ts rename: ${e.message}`);
+	}
+}
+
+async function updatePageAstroFiles() {
+	const idMap = {
+		'warzone-aimbot': 'warzone-aimbot',
+		'warzone-esp': 'warzone-esp',
+		'warzone-wallhack': 'wallhack',
+		'warzone-radar-hack': 'radar',
+		'undetected-warzone-cheats': 'undetected',
+		'warzone-cheats-2026': 'cheats-2026',
+		'ricochet-bypass': 'ricochet',
+		'warzone-hacks': 'hacks',
+		'warzone-cheat-download': 'cheat-download',
+		'warzone-mod-menu': 'mod-menu',
+		'warzone-soft-aim': 'soft-aim',
+		'best-warzone-cheats': 'best-cheats',
+		'warzone-aimbot-hack': 'aimbot-hack',
+		'warzone-esp-hack': 'esp-hack',
+		'warzone-unlock-all': 'unlock-all',
+	};
+
+	for (const [dir, pageId] of Object.entries(idMap)) {
+		const file = path.join(ROOT, 'src', 'pages', dir, 'index.astro');
+		try {
+			const content = `---
 import LocalizedPage from '../../components/LocalizedPage.astro';
---- <LocalizedPage locale="en" pageId="${pageId}" />
-`; await writeFile(file, content, 'utf8'); } catch { // ignore missing dirs } }
-} async function renameImages() { const imagesDir = path.join(ROOT, 'public', 'images'); let files; try { files = await readdir(imagesDir); } catch { return; } for (const file of files) { if (file.includes('fortnite') || file.includes('call-of-duty-delta-force')) { const newName = file.replace(/fortnite-cheats/g, 'call-of-duty-delta-force-cheats').replace(/fortnite-/g, 'delta-force-').replace(/fortnite/g, 'call-of-duty-delta-force'); if (newName !== file) { await rename(path.join(imagesDir, file), path.join(imagesDir, newName)); console.log(`Renamed image: ${file} → ${newName}`); } } }
-} async function main() { console.log('Adapting Fortnite Cheats → Delta Force Cheats...\n'); await renamePageDirs(); await renameFortniteTs(); await transformTextFiles(); await updatePageAstroFiles(); await renameImages(); console.log('\nDone. Next steps:'); console.log(' node scripts/generate-i18n-content.mjs'); console.log(' node scripts/generate-blog-posts.mjs');
-} main().catch((e) => { console.error(e); process.exit(1);
+---
+
+<LocalizedPage locale="en" pageId="${pageId}" />
+`;
+			await writeFile(file, content, 'utf8');
+		} catch {
+			// ignore missing dirs
+		}
+	}
+}
+
+async function renameImages() {
+	const imagesDir = path.join(ROOT, 'public', 'images');
+	let files;
+	try {
+		files = await readdir(imagesDir);
+	} catch {
+		return;
+	}
+	for (const file of files) {
+		if (file.includes('fortnite') || file.includes('call-of-duty-warzone')) {
+			const newName = file
+				.replace(/fortnite-cheats/g, 'call-of-duty-warzone-cheats')
+				.replace(/fortnite-/g, 'warzone-')
+				.replace(/fortnite/g, 'call-of-duty-warzone');
+			if (newName !== file) {
+				await rename(path.join(imagesDir, file), path.join(imagesDir, newName));
+				console.log(`Renamed image: ${file} → ${newName}`);
+			}
+		}
+	}
+}
+
+async function main() {
+	console.log('Adapting Fortnite Cheats → Warzone Hacks...\n');
+	await renamePageDirs();
+	await renameFortniteTs();
+	await transformTextFiles();
+	await updatePageAstroFiles();
+	await renameImages();
+	console.log('\nDone. Next steps:');
+	console.log('  node scripts/generate-i18n-content.mjs');
+	console.log('  node scripts/generate-blog-posts.mjs');
+}
+
+main().catch((e) => {
+	console.error(e);
+	process.exit(1);
 });

@@ -3,10 +3,12 @@ import PageLayout from '../layouts/PageLayout.astro';
 import { getPageContent, getUi, type PageId } from '../data/i18n';
 import { getLocalizedPath, localizeInternalHref } from '../data/i18n/routing';
 import type { LocaleCode } from '../data/i18n/locales';
-import { productInfo, seoFaqs, siteConfig } from '../data/site';
+import { productInfo, seoFaqs, siteConfig, customerReviewStats } from '../data/site';
 import { absoluteFaqUrl, getFaqPath } from '../data/faq';
 import { deltaForceImages } from '../data/delta-force';
 import { simplePageCopy } from '../data/i18n/simple-pages';
+import { getT } from '../i18n/server';
+import { getPageCrawlImage } from '../data/page-images';
 
 interface Props {
 	locale: LocaleCode;
@@ -16,6 +18,8 @@ interface Props {
 const { locale, pageId } = Astro.props;
 const page = getPageContent(locale, pageId);
 const ui = getUi(locale);
+const t = getT(locale);
+const crawl = getPageCrawlImage(pageId);
 const simple = locale === 'en' ? simplePageCopy[pageId] : undefined;
 
 function localizeParagraphHtml(html: string): string {
@@ -30,7 +34,7 @@ const sections = simple?.sections ?? page.sections;
 const ctaPrimaryLabel = simple?.ctaPrimary ?? page.ctaPrimary;
 const ctaSecondaryLabel = simple?.ctaSecondary ?? page.ctaSecondary;
 const ctaSecondaryPath = simple?.ctaSecondaryHref ?? page.ctaSecondaryHref;
-const galleryTitle = simple?.galleryTitle ?? page.galleryTitle ?? 'In-game look';
+const galleryTitle = simple?.galleryTitle ?? page.galleryTitle ?? t('common.inGameLook');
 
 const introEditByPage: Partial<Record<PageId, string>> = {
 	features: 'featuresIntro',
@@ -42,17 +46,22 @@ const introEditByPage: Partial<Record<PageId, string>> = {
 	faq: 'faqIntro',
 };
 const introEdit = locale === 'en' ? introEditByPage[pageId] : undefined;
-const gallery = deltaForceImages.product.slice(0, 3).map((img) => ({
-	src: img.src,
-	alt: img.alt,
-}));
+const gallery = [
+	{ src: crawl.src, alt: page.imageAlt || crawl.caption },
+	...deltaForceImages.product.slice(0, 2).map((img) => ({
+		src: img.src,
+		alt: img.alt,
+	})),
+];
+
+const pageUrl = new URL(getLocalizedPath(pageId, locale), siteConfig.url).href;
+const priceValidUntil = '2027-12-31';
 
 const faqSchema =
 	pageId === 'faq' && locale === 'en'
 		? {
-				'@context': 'https://schema.org',
 				'@type': 'FAQPage',
-				'@id': `${new URL(getLocalizedPath('faq', locale), siteConfig.url).href}#faq`,
+				'@id': `${pageUrl}#faq`,
 				mainEntity: seoFaqs.map((item) => ({
 					'@type': 'Question',
 					name: item.question,
@@ -61,6 +70,47 @@ const faqSchema =
 				})),
 			}
 		: null;
+
+const storeSchema =
+	pageId === 'pricing' || pageId === 'hacks'
+		? {
+				'@type': 'Product',
+				'@id': `${pageUrl}#product`,
+				name: productInfo.name,
+				description: productInfo.summary,
+				image: crawl.url,
+				brand: { '@type': 'Brand', name: productInfo.brand },
+				url: new URL('/delta-force-cheats/', siteConfig.url).href,
+				aggregateRating: {
+					'@type': 'AggregateRating',
+					ratingValue: customerReviewStats.averageRating.toFixed(1),
+					reviewCount: String(customerReviewStats.totalCount),
+					bestRating: '5',
+					worstRating: '1',
+				},
+				offers: {
+					'@type': 'AggregateOffer',
+					lowPrice: Math.min(...productInfo.plans.map((p) => p.price)).toFixed(2),
+					highPrice: Math.max(...productInfo.plans.map((p) => p.price)).toFixed(2),
+					priceCurrency: productInfo.currency,
+					offerCount: productInfo.plans.length,
+					availability: 'https://schema.org/InStock',
+					url: siteConfig.checkoutUrl,
+					offers: productInfo.plans.map((plan) => ({
+						'@type': 'Offer',
+						name: `${productInfo.name} ${plan.label}`,
+						price: plan.price.toFixed(2),
+						priceCurrency: productInfo.currency,
+						priceValidUntil,
+						availability: 'https://schema.org/InStock',
+						url: siteConfig.checkoutUrl,
+						seller: { '@id': `${siteConfig.url}/#organization` },
+					})),
+				},
+			}
+		: null;
+
+const extraGraph = [faqSchema, storeSchema].filter(Boolean) as Record<string, unknown>[];
 
 const ctaSecondaryHref = ctaSecondaryPath
 	? localizeInternalHref(ctaSecondaryPath, locale)
@@ -76,9 +126,10 @@ const eyebrowByPage: Partial<Record<PageId, string>> = {
 	features: ui.nav.features,
 	pricing: ui.nav.pricing,
 	updates: ui.nav.updates,
-	hacks: ui.nav.hacks,
-	'delta-force-esp': ui.nav.esp,
-	'delta-force-aimbot': ui.nav.aimbot,
+	hacks: locale === 'en' ? t('nav.preview') : ui.nav.hacks,
+	'tarkov-esp': ui.nav.esp,
+	'tarkov-aimbot': ui.nav.aimbot,
+	radar: 'Radar',
 	setup: ui.nav.setup,
 	faq: ui.nav.faq,
 };
@@ -92,12 +143,13 @@ const eyebrowByPage: Partial<Record<PageId, string>> = {
 	intro={intro}
 	introEdit={introEdit}
 	eyebrow={eyebrowByPage[pageId]}
-	heroImage={siteConfig.heroImage || deltaForceImages.hero}
-	heroAlt={siteConfig.name}
+	heroImage={crawl.src}
+	heroAlt={page.imageAlt || crawl.caption}
 	gallery={gallery}
 	galleryTitle={galleryTitle}
 	locale={locale}
 	pageId={pageId}
+	extraGraph={extraGraph}
 	ctaPrimary={{ href: siteConfig.checkoutUrl, label: ctaPrimaryLabel, edit: 'ctaBuy' }}
 	ctaSecondary={
 		ctaSecondaryLabel
@@ -105,22 +157,22 @@ const eyebrowByPage: Partial<Record<PageId, string>> = {
 			: undefined
 	}
 >
-	{faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
+	{/* JSON-LD is emitted via PageLayout → Layout extraGraph */}
 
 	{
 		showStorePlans && (
 			<section class="card-panel">
-				<h2>Plans</h2>
+				<h2>{t('product.plans')}</h2>
 				<div class="price-grid">
 					<a class="price-card" href={siteConfig.checkoutUrl} rel="noopener noreferrer">
-						<span class="price-card__label">Monthly</span>
+						<span class="price-card__label">{t('product.monthly')}</span>
 						<span class="price-card__price">${monthly.price}</span>
-						<span class="price-card__meta">30 days</span>
+						<span class="price-card__meta">{t('product.days30')}</span>
 					</a>
 					<a class="price-card is-featured" href={siteConfig.checkoutUrl} rel="noopener noreferrer">
-						<span class="price-card__label">Lifetime</span>
+						<span class="price-card__label">{t('product.lifetime')}</span>
 						<span class="price-card__price">${lifetime.price}</span>
-						<span class="price-card__meta">One-time</span>
+						<span class="price-card__meta">{t('product.oneTime')}</span>
 					</a>
 				</div>
 			</section>
@@ -148,8 +200,8 @@ const eyebrowByPage: Partial<Record<PageId, string>> = {
 	{
 		pageId === 'faq' && locale === 'en' && (
 			<section class="card-panel faq-index">
-				<h2>All questions</h2>
-				<p>Open any question for the full answer.</p>
+				<h2>{t('common.allQuestions')}</h2>
+				<p>{t('common.openAnyQuestion')}</p>
 				<ul class="faq-index__list">
 					{seoFaqs.map((item) => (
 						<li>

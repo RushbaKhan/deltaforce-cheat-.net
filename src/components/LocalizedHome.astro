@@ -4,13 +4,14 @@ import Navbar from '../components/Navbar.astro';
 import Hero from '../components/Hero.astro';
 import HomeReviews from '../components/HomeReviews.astro';
 import HomeSeo from '../components/HomeSeo.astro';
+import HomeAboutApp from '../components/react/HomeAbout';
 import SiteFooter from '../components/SiteFooter.astro';
 import { getLocaleContent, getPageContent } from '../data/i18n';
 import { getLocalizedPath } from '../data/i18n/routing';
 import type { LocaleCode } from '../data/i18n/locales';
-import { homeFaqs, homeSeo, productInfo, siteConfig, seoKeywords, customerReviewStats, customerReviews } from '../data/site';
-import { deltaForceImages } from '../data/delta-force';
-import { heroPreloadSrc, heroSizes } from '../lib/responsive-images';
+import { homeFaqs, homeSeo, productInfo, siteConfig, customerReviewStats } from '../data/site';
+import { heroPreloadSrc, heroSizes, heroSrcSet } from '../lib/responsive-images';
+import { defaultCrawlImageSrc } from '../data/page-images';
 
 interface Props {
 	locale: LocaleCode;
@@ -25,9 +26,18 @@ const title = locale === 'en' ? enHome.title : home.title;
 const description = locale === 'en' ? enHome.description : home.description;
 const canonicalPath = getLocalizedPath('home', locale);
 const canonicalURL = new URL(canonicalPath, siteConfig.url).href;
-const heroImage = new URL(siteConfig.heroImage || deltaForceImages.hero, siteConfig.url).href;
+const heroImage = new URL(siteConfig.defaultOgImage || defaultCrawlImageSrc, siteConfig.url).href;
 const priceValidUntil = '2027-12-31';
 
+const aggregateRating = {
+	'@type': 'AggregateRating',
+	ratingValue: customerReviewStats.averageRating.toFixed(1),
+	reviewCount: String(customerReviewStats.totalCount),
+	bestRating: '5',
+	worstRating: '1',
+};
+
+/** One commerce type only — Product. Reviews live on /reviews/. */
 const extraGraph: Record<string, unknown>[] = [
 	{
 		'@type': 'Product',
@@ -36,44 +46,16 @@ const extraGraph: Record<string, unknown>[] = [
 		description: productInfo.summary,
 		image: heroImage,
 		brand: { '@type': 'Brand', name: productInfo.brand },
-		url: canonicalURL,
-		aggregateRating: {
-			'@type': 'AggregateRating',
-			ratingValue: customerReviewStats.averageRating.toFixed(1),
-			reviewCount: customerReviewStats.totalCount,
-			bestRating: '5',
-			worstRating: '1',
-		},
-		review: customerReviews.slice(0, 3).map((review) => ({
-			'@type': 'Review',
-			author: { '@type': 'Person', name: review.handle },
-			datePublished: review.date,
-			reviewRating: {
-				'@type': 'Rating',
-				ratingValue: String(review.rating),
-				bestRating: '5',
-				worstRating: '1',
-			},
-			reviewBody: review.text,
-		})),
-	},
-	{
-		'@type': 'SoftwareApplication',
-		'@id': `${canonicalURL}#software`,
-		name: productInfo.name,
-		applicationCategory: 'GameApplication',
-		operatingSystem: 'Windows',
-		description: productInfo.summary,
-		url: canonicalURL,
-		image: heroImage,
-		brand: { '@type': 'Brand', name: productInfo.brand },
-		keywords: seoKeywords.join(', '),
+		url: new URL('/delta-force-cheats/', siteConfig.url).href,
+		aggregateRating,
 		offers: {
 			'@type': 'AggregateOffer',
 			lowPrice: Math.min(...productInfo.plans.map((p) => p.price)).toFixed(2),
 			highPrice: Math.max(...productInfo.plans.map((p) => p.price)).toFixed(2),
 			priceCurrency: productInfo.currency,
 			offerCount: productInfo.plans.length,
+			availability: 'https://schema.org/InStock',
+			url: siteConfig.checkoutUrl,
 			offers: productInfo.plans.map((plan) => ({
 				'@type': 'Offer',
 				name: `${productInfo.name} ${plan.label}`,
@@ -107,22 +89,30 @@ const extraGraph: Record<string, unknown>[] = [
 	description={description}
 	canonicalPath={canonicalPath}
 	ogImage={siteConfig.defaultOgImage}
-	ogImageAlt={home.imageAlt}
+	ogImageAlt={
+		home.imageAlt?.trim() && home.imageAlt.trim().length > 12
+			? home.imageAlt
+			: `${siteConfig.name} — Escape from Tarkov ESP and aimbot`
+	}
 	locale={locale}
 	pageId="home"
 	breadcrumbs={[{ label: ui.nav.home }]}
 	extraGraph={locale === 'en' ? extraGraph : extraGraph.filter((n) => n['@type'] !== 'FAQPage')}
 	lcpImage={heroPreloadSrc}
+	lcpImageSrcSet={heroSrcSet}
 	lcpImageSizes={heroSizes}
 >
 	<Navbar locale={locale} pageId="home" />
 	<main class="home">
 		<Hero locale={locale} />
-		<HomeReviews />
+		<HomeReviews locale={locale} />
 		<div class="home__seo">
 			{
 				locale === 'en' ? (
-					<HomeSeo />
+					<>
+						<HomeAboutApp client:visible locale={locale} />
+						<HomeSeo locale={locale} />
+					</>
 				) : (
 					<div class="shell home__prose">
 						<h2>{home.h1}</h2>
@@ -154,6 +144,8 @@ const extraGraph: Record<string, unknown>[] = [
 	.home__seo {
 		border-top: 1px solid var(--line-soft);
 		background: var(--bg-panel);
+		content-visibility: auto;
+		contain-intrinsic-size: 1px 900px;
 	}
 
 	.home__prose {
@@ -161,6 +153,21 @@ const extraGraph: Record<string, unknown>[] = [
 		color: var(--ink-muted);
 		line-height: 1.65;
 		font-size: 0.9375rem;
+	}
+
+	.home__prose--en {
+		padding-block: clamp(2rem, 4vw, 2.75rem) 0.5rem;
+		border-bottom: 1px solid var(--line-soft);
+	}
+
+	.home__prose--en a {
+		color: var(--magenta-soft);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.home__prose--en a:hover {
+		color: var(--ink);
 	}
 
 	.home__prose h2 {

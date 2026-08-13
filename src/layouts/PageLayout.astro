@@ -16,6 +16,7 @@ import {
 } from '../lib/responsive-images';
 import { defaultLocale } from '../data/i18n/locales';
 import { siteConfig } from '../data/site';
+import { getT } from '../i18n/server';
 
 type GalleryInput = string | { src: string; alt: string };
 
@@ -36,6 +37,7 @@ interface Props {
 	showGallery?: boolean;
 	locale?: import('../data/i18n/locales').LocaleCode;
 	pageId?: import('../data/i18n/content.generated').PageId;
+	extraGraph?: Record<string, unknown>[];
 }
 
 const {
@@ -46,16 +48,24 @@ const {
 	intro,
 	eyebrow,
 	heroImage = deltaForceImages.hero,
-	heroAlt = siteConfig.name,
+	heroAlt,
 	gallery = deltaForceImages.product.slice(0, 3),
-	galleryTitle = 'In-game look',
+	galleryTitle,
 	ctaPrimary,
 	ctaSecondary,
 	introEdit,
 	showGallery = true,
 	locale = defaultLocale,
 	pageId: pageIdProp,
+	extraGraph = [],
 } = Astro.props;
+
+const t = getT(locale);
+const resolvedHeroAlt =
+	(heroAlt && heroAlt.trim()) ||
+	t('images.hero') ||
+	`${siteConfig.name} — Delta Force ESP and aimbot`;
+const resolvedGalleryTitle = galleryTitle ?? t('common.inGameLook');
 
 function resolvePageId(path: string): PageId | undefined {
 	return resolvePageContextFromPath(path).pageId;
@@ -68,8 +78,11 @@ const resolvedEyebrow = eyebrow ?? ui.product.title;
 
 const normalizedGallery = gallery
 	.map((item) => {
-		if (typeof item !== 'string') return { src: item.src, alt: item.alt };
-		return { src: item, alt: heroAlt };
+		if (typeof item !== 'string') {
+			const alt = item.alt?.trim() || resolvedHeroAlt;
+			return { src: item.src, alt };
+		}
+		return { src: item, alt: resolvedHeroAlt };
 	})
 	.filter((item) => Boolean(item.src));
 
@@ -78,7 +91,10 @@ const breadcrumbs = [
 	{ label: heading },
 ];
 
-const useHomeHero = heroImage === deltaForceImages.hero;
+const useHomeHero =
+	heroImage === deltaForceImages.hero ||
+	heroImage === siteConfig.defaultOgImage ||
+	heroImage.includes('hero-banner');
 ---
 
 <Layout
@@ -86,57 +102,55 @@ const useHomeHero = heroImage === deltaForceImages.hero;
 	description={description}
 	canonicalPath={canonicalPath}
 	ogImage={heroImage}
-	ogImageAlt={heroAlt}
+	ogImageAlt={resolvedHeroAlt}
 	breadcrumbs={breadcrumbs}
 	locale={locale}
 	pageId={pageId}
-	lcpImage={useHomeHero ? heroPreloadSrc : undefined}
-	lcpImageSrcSet={useHomeHero ? heroSrcSet : undefined}
-	lcpImageSizes={useHomeHero ? heroSizes : undefined}
+	extraGraph={extraGraph}
+	lcpImage={useHomeHero ? heroPreloadSrc : heroImage.endsWith('.webp') ? heroImage : undefined}
+	lcpImageSrcSet={useHomeHero ? heroSrcSet : contentSrcSet(heroImage)}
+	lcpImageSizes={useHomeHero ? heroSizes : '100vw'}
 >
 	<Navbar locale={locale} pageId={pageId} />
 	<main class="page">
 		<section class="banner">
-			<div class="banner__media" aria-hidden="true">
+			<div class="banner__media">
 				{
 					useHomeHero ? (
-						<picture>
-							<source media="(max-width: 760px)" srcset={heroPreloadSrc} type="image/webp" />
-							<source
-								media="(min-width: 761px)"
-								srcset={heroSrcSet}
-								sizes={heroSizes}
-								type="image/webp"
-							/>
-							<img
-								src={heroPreloadSrc}
-								alt=""
-								width={heroWidth}
-								height={heroHeight}
-								class="banner__img"
-								fetchpriority="high"
-								loading="eager"
-								decoding="sync"
-							/>
-						</picture>
+						<img
+							src={heroPreloadSrc}
+							srcset={heroSrcSet}
+							sizes={heroSizes}
+							alt={resolvedHeroAlt}
+							width={heroWidth}
+							height={heroHeight}
+							class="banner__img"
+							fetchpriority="high"
+							loading="eager"
+							decoding="async"
+						/>
 					) : (
 						<img
 							src={heroImage}
-							alt=""
-							width="1600"
-							height="900"
+							{...(contentSrcSet(heroImage)
+								? { srcset: contentSrcSet(heroImage), sizes: '100vw' }
+								: {})}
+							alt={resolvedHeroAlt}
+							width="1280"
+							height="720"
 							class="banner__img"
+							fetchpriority="high"
 							loading="eager"
 							decoding="async"
 						/>
 					)
 				}
-				<div class="banner__scrim"></div>
+				<div class="banner__scrim" aria-hidden="true"></div>
 			</div>
 
 			<div class="shell banner__shell">
 				<div class="banner__content">
-					<nav class="banner__crumbs" aria-label="Breadcrumb">
+					<nav class="banner__crumbs" aria-label={t('common.breadcrumb')}>
 						<a href={homeHref}>{ui.nav.home}</a>
 						<span aria-hidden="true">/</span>
 						<span aria-current="page">{heading}</span>
@@ -181,8 +195,8 @@ const useHomeHero = heroImage === deltaForceImages.hero;
 				showGallery && normalizedGallery.length > 0 && (
 					<section class="gallery-block" aria-labelledby="page-gallery-title">
 						<header class="gallery-block__head">
-							<p class="gallery-block__eyebrow">Gallery</p>
-							<h2 id="page-gallery-title">{galleryTitle}</h2>
+							<p class="gallery-block__eyebrow">{t('common.gallery')}</p>
+							<h2 id="page-gallery-title">{resolvedGalleryTitle}</h2>
 						</header>
 						<div class="gallery-block__grid">
 							{normalizedGallery.map((image) => (
@@ -463,6 +477,8 @@ const useHomeHero = heroImage === deltaForceImages.hero;
 		width: 100%;
 		display: grid;
 		gap: 0.85rem;
+		content-visibility: auto;
+		contain-intrinsic-size: 1px 420px;
 	}
 
 	.gallery-block__head h2 {

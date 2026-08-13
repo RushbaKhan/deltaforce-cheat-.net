@@ -7,7 +7,10 @@ import { renderSitemapIndexXml, sitemapResponseHeaders } from '../data/sitemap-x
 
 export const prerender = true;
 
-/** Primary sitemap index for Google Search Console — EN + 21 locale + image sitemaps. */
+/**
+ * Primary sitemap index for Google Search Console — EN + 21 locale + image sitemaps.
+ * Page URLs live in sitemap-en.xml (Features=/features/, Store=/pricing/, Status=/updates/).
+ */
 export const GET: APIRoute = () => {
 	const pageLastmod = latestPageLastmod();
 	// sitemap-en.xml also contains blog URLs, so its lastmod must cover the newest post update.

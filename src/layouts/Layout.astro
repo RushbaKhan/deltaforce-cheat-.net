@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import { productInfo, siteConfig, seoKeywords } from '../data/site';
+import { productInfo, siteConfig } from '../data/site';
 import { brandTheme, brandThemeInlineStyle, brandThemeRootCss } from '../data/brand-theme';
 import I18nHead from '../components/I18nHead.astro';
 import LocaleSuggest from '../components/LocaleSuggest.astro';
@@ -78,6 +78,10 @@ const graph: Record<string, unknown>[] = [
 		primaryImageOfPage: {
 			'@type': 'ImageObject',
 			url: ogImageURL,
+			name: ogImageAlt,
+			description: ogImageAlt,
+			width: Number(ogImageWidth),
+			height: Number(ogImageHeight),
 		},
 	},
 	{
@@ -147,10 +151,12 @@ if (extraGraph.length > 0) {
 }
 
 const softwareNode = extraGraph.find((node) => node['@type'] === 'SoftwareApplication');
-if (softwareNode) {
+const productNode = extraGraph.find((node) => node['@type'] === 'Product');
+const aboutNode = softwareNode ?? productNode;
+if (aboutNode) {
 	const webpage = graph.find((node) => node['@type'] === 'WebPage') as Record<string, unknown> | undefined;
 	if (webpage) {
-		webpage.about = { '@id': softwareNode['@id'] };
+		webpage.about = { '@id': aboutNode['@id'] };
 	}
 }
 ---
@@ -162,38 +168,48 @@ if (softwareNode) {
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content={brandTheme.bg} />
-		{/* Self-hosted Inter + Syne via CSS — no Google Fonts (avoids CSP console errors). */}
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="/fonts/inter-latin-wght-normal.woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			as="font"
+			type="font/woff2"
+			href="/fonts/syne-latin-wght-normal.woff2"
+			crossorigin
+		/>
+		{/* Self-hosted Inter + Syne (latin) — no Google Fonts. */}
 		<script is:inline src="/trusted-types-policy.js"></script>
 		<meta name="robots" content={robots} />
 		<meta name="googlebot" content={robots} />
 		<meta name="description" content={description} />
-		<meta name="keywords" content={seoKeywords.join(', ')} />
 		<meta name="author" content={siteConfig.name} />
 		<link rel="canonical" href={canonicalURL} />
 		{
-			lcpImage && (
+			lcpImageSrcSet ? (
 				<link
 					rel="preload"
 					as="image"
-					href={lcpImage}
-					type="image/webp"
-					fetchpriority="high"
-					media="(max-width: 760px)"
-				/>
-			)
-		}
-		{
-			lcpImageSrcSet && (
-				<link
-					rel="preload"
-					as="image"
-					href={lcpImageSrcSet.split(' ')[0]}
+					href={lcpImage ?? lcpImageSrcSet.split(' ')[0]}
 					type="image/webp"
 					fetchpriority="high"
 					imagesrcset={lcpImageSrcSet}
 					imagesizes={lcpImageSizes}
-					media="(min-width: 761px)"
 				/>
+			) : (
+				lcpImage && (
+					<link
+						rel="preload"
+						as="image"
+						href={lcpImage}
+						type="image/webp"
+						fetchpriority="high"
+					/>
+				)
 			)
 		}
 		{pageId && <I18nHead pageId={pageId} locale={locale} />}
